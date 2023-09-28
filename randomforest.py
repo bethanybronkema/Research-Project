@@ -1,7 +1,7 @@
 from ucimlrepo import fetch_ucirepo
 
 # fetch dataset 
-#mushroom = fetch_ucirepo(id=73) 
+mushroom = fetch_ucirepo(id=73) 
 
 # data (as pandas dataframes) 
 #X = mushroom.data.features 
