@@ -1,14 +1,12 @@
-from ucimlrepo import fetch_ucirepo
+import numpy as np
+import csv
 
 # fetch dataset 
-mushroom = fetch_ucirepo(id=73) 
+with open('/Users/bethanybronkema/Documents/mushroom/agaricus-lepiota.data', 'r') as f:
+    reader = csv.reader(f)
+    data = list(reader)
 
-# data (as pandas dataframes) 
-#X = mushroom.data.features 
-#y = mushroom.data.targets 
-  
-# metadata 
-#print(mushroom.metadata) 
-  
-# variable information 
-#print(mushroom.variables) 
+mushroom = np.array(data)
+
+targets = mushroom[:, 0]
+features = mushroom[:, 1:]
