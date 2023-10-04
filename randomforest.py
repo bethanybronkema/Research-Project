@@ -57,6 +57,9 @@ features.columns = ['Cap Shape', 'Cap Surface', 'Cap Color', 'Bruises', 'Odor', 
 # remove Stalk Root column since it has missing values
 features.drop(['Stalk Root'], inplace = True, axis = 1)
 
+#save formatted data in a new file
+features.to_csv('formatted_data.csv', index=False)
+
 # split 2/3 training (based on reference paper)
 f_train, f_test, t_train, t_test = train_test_split(features, targets, random_state = 1, stratify = targets, train_size = 2/3)
 
