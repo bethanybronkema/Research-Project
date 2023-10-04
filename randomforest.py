@@ -5,9 +5,6 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (confusion_matrix, accuracy_score, precision_score, recall_score)
-from sklearn.decomposition import PCA
-
-from tools import standardize
 
 # get dataset 
 mushroom = pd.read_table('agaricus-lepiota.data', sep = ',', header = None)
@@ -47,6 +44,7 @@ KEY FOR NUMERIC ASSIGNMENTS:
     Population: scattered - 0, numerous - 1, abundant - 2, several - 3, solitary - 4, clustered - 5
     Habitat: urban - 0, grasses - 1, meadows - 2, woods - 3, paths - 4, waste - 5, leaves - 6
 '''
+
 for j in range(1, 23):
     features_dict = {k: i for i, k in enumerate(features[j].unique())}
     features.loc[:, j] = features.loc[:, j].map(features_dict)
@@ -58,20 +56,22 @@ features.columns = ['Cap Shape', 'Cap Surface', 'Cap Color', 'Bruises', 'Odor', 
 features.drop(['Stalk Root'], inplace = True, axis = 1)
 
 #save formatted data in a new file
-features.to_csv('formatted_data.csv', index=False)
+#features.to_csv('formatted_data.csv', index=False)
 
 # split 2/3 training (based on reference paper)
 f_train, f_test, t_train, t_test = train_test_split(features, targets, random_state = 1, stratify = targets, train_size = 2/3)
 
 # make the classifier
-forest = RandomForestClassifier()
+forest = RandomForestClassifier(n_estimators=5, max_features=6, random_state=1)
 forest.fit(f_train, t_train)
 
+# classify test data
 predictions = forest.predict(f_test)
 
+# get accuracy, precision, recall, and confusion matrix of predictions
 accuracy = accuracy_score(t_test, predictions)
 precision = precision_score(t_test, predictions)
 recall = recall_score(t_test, predictions)
 con_matrix = confusion_matrix(t_test, predictions)
-#print(accuracy, precision, recall)
-#print(con_matrix)
+print(accuracy, precision, recall)
+print(con_matrix)
