@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (confusion_matrix, accuracy_score, precision_score, recall_score)
+from sklearn.decomposition import PCA
+
+from tools import standardize
 
 # get dataset 
 mushroom = pd.read_table('agaricus-lepiota.data', sep = ',', header = None)
@@ -62,9 +65,10 @@ forest = RandomForestClassifier()
 forest.fit(f_train, t_train)
 
 predictions = forest.predict(f_test)
-print(predictions)
 
 accuracy = accuracy_score(t_test, predictions)
 precision = precision_score(t_test, predictions)
 recall = recall_score(t_test, predictions)
-print(accuracy, precision, recall)
+con_matrix = confusion_matrix(t_test, predictions)
+#print(accuracy, precision, recall)
+#print(con_matrix)
