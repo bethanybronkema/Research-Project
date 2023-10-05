@@ -1,22 +1,15 @@
 #functions to use in randomforest.py
 
 import numpy as np
-import pandas as pd
+import matplotlib.pyplot as plt
 
-def standardize(X: pd.DataFrame) -> pd.DataFrame:
-    '''
-    Standardize an array of shape [N x 1]
-
-    Input arguments:
-    * X (np.ndarray): An array of shape [N x 1]
-
-    Returns:
-    (np.ndarray): A standardized version of X, also
-    of shape [N x 1]
-    '''
-    x_hat = np.empty((X.shape[0], X.shape[1]))
-    for i in range(1, (X.shape[0]+1)):
-        for j in range(X.shape[1]):
-            x_hat.loc[i, j] = (X.loc[i, j] - np.mean(X.loc[:, j]))/np.std(X.loc[:, j])
-    return x_hat
+def scatter_3d_data(data1: np.ndarray, data2: np.ndarray):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(data1[:, 0], data1[:, 1], data1[:, 2], c='k')
+    ax.scatter(data2[:, 0], data2[:, 1], data2[:, 2], c='b')
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_zlabel('z')
+    plt.show()
 
