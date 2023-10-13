@@ -3,8 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import (confusion_matrix, accuracy_score, precision_score, recall_score)
+from tools import forest_classifying
 
 '''
 Initial Project Idea: Test Random Forest performace on UCI mushroom dataset
@@ -64,49 +63,53 @@ def mushroom_data_format():
     features.to_csv('formatted_data.csv', index=False)
 
     # split 2/3 training (based on reference paper)
-    f_train, f_test, t_train, t_test = train_test_split(features, targets, random_state = 1, stratify = targets, train_size = 0.01)
+    f_train, f_test, t_train, t_test = train_test_split(features, targets, random_state = 1, stratify = targets, train_size = 0.8)
     return f_train, f_test, t_train, t_test
 
-def forest_classifying():
-
-    f_train, f_test, t_train, t_test = mushroom_data_format()
-
-    # make the classifier
-    forest = RandomForestClassifier(max_features=6, random_state=1)
-    forest.fit(f_train, t_train)
-
-    # classify test data
-    predictions = forest.predict(f_test)
-
-    # get accuracy, precision, recall, and confusion matrix of predictions
-    accuracy = accuracy_score(t_test, predictions)
-    precision = precision_score(t_test, predictions)
-    recall = recall_score(t_test, predictions)
-    con_matrix = confusion_matrix(t_test, predictions)
-    print(accuracy, precision, recall)
-    print(con_matrix)
+#f_train, f_test, t_train, t_test = mushroom_data_format()
+#forest_classifying(f_train, f_test, t_train, t_test)
 
 '''
 Updated Project Section: Compare Random Forest performances to Bayes Error
 '''
 
+from tools import gen_data
 from tools import scatter_3d_data
+from tools import chernoff
+from tools import plot_chernoff_error
 
-def gen_data(
-    n: int,
-    k: int,
-    mean: np.ndarray,
-    var: float
-) -> np.ndarray:
-    '''Generate n values samples from the k-variate
-    normal distribution
-    '''
-    np.random.seed(1234)
-    I = np.identity(k)
-    X = np.random.multivariate_normal(mean, np.square(var)*I, n)
-    return X
+# Generate data from two different gaussian distributuions
 
-data1 = gen_data(500, 3, np.array([1, 0, 3]), 3)
-data2 = gen_data(400, 3, np.array([6, 2, 4]), 2)
+data0, mean0, sigma0 = gen_data(500, 3, np.array([1, 0, 3]), 3)
+data1, mean1, sigma1 = gen_data(400, 3, np.array([6, 2, 4]), 2)
 
-scatter_3d_data(data1, data2)
+# Plot the data
+
+scatter_3d_data(data0, data1)
+
+# Plot the Chernoff Error to obtain an estimate of s
+
+plot_chernoff_error(500, mean0, mean1, sigma0, sigma1)
+
+# From the plot, a value of 0.4 seems to be the lowest error
+# Calculate Bhattacharyya and Chernoff error with s = 0.4
+
+bhat_error = chernoff(0.5, mean0, mean1, sigma0, sigma1)
+cher_error = chernoff(0.4, mean0, mean1, sigma0, sigma1)
+print('The Bhattacharyya error is:\n', bhat_error)
+print('The Chernoff error is:\n', cher_error)
+
+data_targets = np.zeros(data0.shape[0]+data1.shape[0])
+data_features = np.zeros([data_targets.shape[0], data0.shape[1]])
+
+for n in range(data_targets.shape[0]):
+    if n < 500:
+        data_targets[n] = 0
+        data_features[n] = data0[n]
+    else:
+        data_targets[n] = 1
+        data_features[n] = data1[n-500]
+
+#f_train, f_test, t_train, t_test = train_test_split(data_features, data_targets, random_state = 1, stratify = data_targets, train_size = 0.75)
+
+#forest_classifying(f_train, f_test, t_train, t_test)
