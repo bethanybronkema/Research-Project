@@ -118,18 +118,13 @@ for n in range(data_targets.shape[0]):
 f_train, f_test, t_train, t_test = train_test_split(data_features, data_targets, random_state = 1, stratify = data_targets, train_size = 0.75)
 
 # Run the classifier with various estimator parameters to determine best value
+
 num_trees = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-max_depth = [5, 10, 15, 20, 25, 30, 35, 40, 45]
 tree_accuracy = np.zeros(11)
 tree_precision = np.zeros(11) 
 tree_recall = np.zeros(11)
-depth_accuracy = np.zeros(9)
-depth_precision= np.zeros(9)
-depth_recall = np.zeros(9)
 for trees in range(11):
-        tree_accuracy[trees], tree_precision[trees], tree_recall[trees] = forest_classifying(f_train, f_test, t_train, t_test, num_trees[trees], None)
-for depth in range(9):
-        depth_accuracy[depth], depth_precision[depth], depth_recall[depth] = forest_classifying(f_train, f_test, t_train, t_test, 100, max_depth[depth])
+    tree_accuracy[trees], tree_precision[trees], tree_recall[trees], con_mat = forest_classifying(f_train, f_test, t_train, t_test, num_trees[trees], None)
 
 # Plot the results
 
@@ -142,9 +137,20 @@ plt.title('Precision')
 plt.subplot(3, 1, 3)
 plt.scatter(num_trees, tree_recall)
 plt.title('Recall')
-plt.tight_layout()
 plt.xlabel('Number of Estimators')
+plt.tight_layout()
 plt.show()
+
+# Based on the plots, 30 trees is the best value. Run through various max_depth values at 30 trees.
+
+max_depth = [5, 10, 15, 20, 25, 30, 35, 40, 45]
+depth_accuracy = np.zeros(9)
+depth_precision= np.zeros(9)
+depth_recall = np.zeros(9)
+for depth in range(9):
+    depth_accuracy[depth], depth_precision[depth], depth_recall[depth], con_mat = forest_classifying(f_train, f_test, t_train, t_test, 30, max_depth[depth])
+
+# Plot the results
 
 plt.subplot(3, 1, 1)
 plt.scatter(max_depth, depth_accuracy)
@@ -155,10 +161,14 @@ plt.title('Precision')
 plt.subplot(3, 1, 3)
 plt.scatter(max_depth, depth_recall)
 plt.title('Recall')
-plt.tight_layout()
 plt.xlabel('Maximum Estimator Depth')
+plt.tight_layout()
 plt.show()
 
+# Best max_depth value is 5. Run the classifier with optimal parameters and return best accuracy, precision, recall, and the confusion matrix.
+
+accuracy, precision, recall, con_mat = forest_classifying(f_train, f_test, t_train, t_test, 30, 5)
+print('Accuracy:', accuracy, '\nPrecision:', precision, '\nRecall:', recall, '\nConfusion Matrix:', con_mat)
 
 def estimate_bayes_error():
     for i in range(data_features.shape[0]):

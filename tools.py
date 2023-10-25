@@ -19,12 +19,8 @@ def forest_classifying(f_train, f_test, t_train, t_test, n_estimators, max_depth
     precision = precision_score(t_test, predictions)
     recall = recall_score(t_test, predictions)
     con_matrix = confusion_matrix(t_test, predictions)
-    #print('Accuracy:\n', "%.2f" % accuracy) 
-    #print('Precision:\n', "%.2f" % precision)
-    #print('Recall:\n', "%.2f" % recall)
-    #print('Confusion Matrix:\n', con_matrix)
 
-    return accuracy, precision, recall
+    return accuracy, precision, recall, con_matrix
 
 def gen_data(
     n: int,
