@@ -81,8 +81,8 @@ from tools import plot_chernoff_error
 
 # Generate data from two different gaussian distributuions
 
-data0, mean0, sigma0 = gen_data(500, 3, np.array([0.5, 0.5, 0.5]), 0.5)
-data1, mean1, sigma1 = gen_data(500, 3, np.array([-0.5, 0.5, 0.5]), 0.5)
+data0, mean0, sigma0 = gen_data(5000, 3, np.array([0.5, 0.5, 0.5]), 0.4)
+data1, mean1, sigma1 = gen_data(5000, 3, np.array([-0.5, 0.5, 0.5]), 0.6)
 
 # Plot the data
 
@@ -92,11 +92,11 @@ scatter_3d_data(data0, data1)
 
 plot_chernoff_error(5000, mean0, mean1, sigma0, sigma1)
 
-# From the plot, a value of 0.4 seems to be the lowest error
-# Calculate Bhattacharyya and Chernoff error with s = 0.5
+# From the plot, a value of 0.6 seems to be the lowest error
+# Calculate Bhattacharyya and Chernoff error with s = 0.6
 
 bhat_error = chernoff(0.5, mean0, mean1, sigma0, sigma1)
-cher_error = chernoff(0.5, mean0, mean1, sigma0, sigma1)
+cher_error = chernoff(0.6, mean0, mean1, sigma0, sigma1)
 #print('The Bhattacharyya error is:\n', bhat_error)
 print('The Chernoff error is:\n', cher_error)
 
@@ -106,12 +106,12 @@ data_targets = np.zeros(data0.shape[0]+data1.shape[0])
 data_features = np.zeros([data_targets.shape[0], data0.shape[1]])
 
 for n in range(data_targets.shape[0]):
-    if n < 500:
+    if n < 5000:
         data_targets[n] = 0
         data_features[n] = data0[n]
     else:
         data_targets[n] = 1
-        data_features[n] = data1[n-500]
+        data_features[n] = data1[n-5000]
 
 # Use 75 percent of the data for training and 25 percent for testing
 
@@ -119,92 +119,60 @@ f_train, f_test, t_train, t_test = train_test_split(data_features, data_targets,
 
 # Run the classifier with various estimator parameters to determine best value
 num_trees = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-accuracy = np.zeros(11)
-precision = np.zeros(11) 
-recall = np.zeros(11)
+max_depth = [5, 10, 15, 20, 25, 30, 35, 40, 45]
+tree_accuracy = np.zeros(11)
+tree_precision = np.zeros(11) 
+tree_recall = np.zeros(11)
+depth_accuracy = np.zeros(9)
+depth_precision= np.zeros(9)
+depth_recall = np.zeros(9)
 for trees in range(11):
-        accuracy[trees], precision[trees], recall[trees] = forest_classifying(f_train, f_test, t_train, t_test, num_trees[trees])
+        tree_accuracy[trees], tree_precision[trees], tree_recall[trees] = forest_classifying(f_train, f_test, t_train, t_test, num_trees[trees], None)
+for depth in range(9):
+        depth_accuracy[depth], depth_precision[depth], depth_recall[depth] = forest_classifying(f_train, f_test, t_train, t_test, 100, max_depth[depth])
 
 # Plot the results
 
 plt.subplot(3, 1, 1)
-plt.scatter(num_trees, accuracy)
+plt.scatter(num_trees, tree_accuracy)
 plt.title('Accuracy')
 plt.subplot(3, 1, 2)
-plt.scatter(num_trees, precision)
+plt.scatter(num_trees, tree_precision)
 plt.title('Precision')
 plt.subplot(3, 1, 3)
-plt.scatter(num_trees, recall)
+plt.scatter(num_trees, tree_recall)
 plt.title('Recall')
 plt.tight_layout()
+plt.xlabel('Number of Estimators')
 plt.show()
-'''
-# 30 trees seems to be the best fit for this data
 
-for i in range(11):
-    com_error = (1/num_trees[i])*cher_error
-    print('The maximum accuracy for this ensemble with', num_trees[i], 'trees is:\n', "%.3f" % (1-com_error))
-'''
+plt.subplot(3, 1, 1)
+plt.scatter(max_depth, depth_accuracy)
+plt.title('Accuracy')
+plt.subplot(3, 1, 2)
+plt.scatter(max_depth, depth_precision)
+plt.title('Precision')
+plt.subplot(3, 1, 3)
+plt.scatter(max_depth, depth_recall)
+plt.title('Recall')
+plt.tight_layout()
+plt.xlabel('Maximum Estimator Depth')
+plt.show()
 
-# Numerical estimation of Bayes Error
+
 def estimate_bayes_error():
-    p = np.arange(-0.5, 0.5, step=0.012)
-    q = np.arange(0, 0.5, step=0.006)
-    r = np.arange(0, 0.5, step=0.006)
-    xx, yy, zz = np.meshgrid(p, q, r)
-    grid_samples = np.concatenate((xx.reshape(-1, 1), yy.reshape(-1, 1), zz.reshape(-1, 1)), axis=1)
-    errors = []
-    for i in range(grid_samples.shape[0]):
-        coorx = grid_samples[i][0]
-        coory = grid_samples[i][1]
-        coorz = grid_samples[i][2]
-
-        x = grid_samples[i]
-
-        if (coorx >= 0 and coory >= 0 and coorz >= 0):
-            true_class = 0
-        else:
-            true_class = 1
-
-        prob_0 = scipy.stats.multivariate_normal(mean0, sigma0).pdf(x)
-        prob_1 = scipy.stats.multivariate_normal(mean1, sigma1).pdf(x)
-
-        all_prob = [prob_0, prob_1]
-
-        if np.argmax(all_prob) == 0:
-            predicted_class = 0
-            errors.append(prob_1/(np.sum(all_prob)))
-        else:
-            predicted_class = 1
-            errors.append(prob_0/(np.sum(all_prob)))
-        
-        if predicted_class != true_class:
-            print('Mismatch!')
-            print('Predicted: ', predicted_class, 'True: ', true_class)
-    
-    error = np.sum(errors) / len(errors)
-    print('Overall Bayes Probability of Error: ', error)
-
-# estimate_bayes_error()
-# Bayes Error was found to be 0.379
-
-def own_bayes_error():
     for i in range(data_features.shape[0]):
         errors = []
         prob0 = scipy.stats.multivariate_normal(mean0, sigma0).pdf(data_features[i])
         prob1 = scipy.stats.multivariate_normal(mean1, sigma1).pdf(data_features[i])
         all_prob = [prob0, prob1]
         if np.argmax(all_prob) == 0:
-            predicted_class = 0
             errors.append(prob1/(np.sum(all_prob)))
         else:
-            predicted_class = 1
             errors.append(prob0/(np.sum(all_prob)))
 
-        if predicted_class != data_targets[i]:
-            print('Mismatch!')
-            print('Predicted: ', predicted_class, 'True: ', data_targets[i])
     error = np.sum(errors) / len(errors)
-    print('Overall Bayes Probability of Error: ', error)
+    return error
 
-own_bayes_error()
+bayes_error = estimate_bayes_error()
+print('Bayes Probability of Error: ', bayes_error)

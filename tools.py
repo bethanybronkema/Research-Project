@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (confusion_matrix, accuracy_score, precision_score, recall_score)
 
-def forest_classifying(f_train, f_test, t_train, t_test, n_estimators):
+def forest_classifying(f_train, f_test, t_train, t_test, n_estimators, max_depth):
 
     # make the classifier
-    forest = RandomForestClassifier(n_estimators=n_estimators, random_state=10)
+    forest = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth, random_state=10)
     forest.fit(f_train, t_train)
 
     # classify test data
@@ -19,9 +19,9 @@ def forest_classifying(f_train, f_test, t_train, t_test, n_estimators):
     precision = precision_score(t_test, predictions)
     recall = recall_score(t_test, predictions)
     con_matrix = confusion_matrix(t_test, predictions)
-    print('Accuracy:\n', "%.2f" % accuracy) 
-    print('Precision:\n', "%.2f" % precision)
-    print('Recall:\n', "%.2f" % recall)
+    #print('Accuracy:\n', "%.2f" % accuracy) 
+    #print('Precision:\n', "%.2f" % precision)
+    #print('Recall:\n', "%.2f" % recall)
     #print('Confusion Matrix:\n', con_matrix)
 
     return accuracy, precision, recall
