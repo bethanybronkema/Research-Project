@@ -97,7 +97,7 @@ plot_chernoff_error(5000, mean0, mean1, sigma0, sigma1)
 
 bhat_error = chernoff(0.5, mean0, mean1, sigma0, sigma1)
 cher_error = chernoff(0.6, mean0, mean1, sigma0, sigma1)
-#print('The Bhattacharyya error is:\n', bhat_error)
+print('The Bhattacharyya error is:\n', bhat_error)
 print('The Chernoff error is:\n', cher_error)
 
 # Define features and target values
